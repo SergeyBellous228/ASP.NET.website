@@ -1,0 +1,198 @@
+﻿@model WebHike.Models.Product.CreateProductViewModel
+
+<h1 class="text-center">Створити товар</h1>
+
+<div class="row">
+
+    <form asp-action="ProdCreate" method="post" id="createProductForm"
+          class="col-md-6 offset-md-3">
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control">
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Slug" class="form-label"></label>
+            <input asp-for="Slug" class="form-control">
+            <span asp-validation-for="Slug" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CategoryName" class="form-label"></label>
+            <select class="form-select" asp-for="CategoryName">
+                @foreach (var catName in ViewBag.Categories)
+                {
+                    <option value="@catName">@catName</option>
+                }
+            </select>
+            <span asp-validation-for="CategoryName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Price" class="form-label"></label>
+            <input asp-for="Price" class="form-control">
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control"
+                      rows="4" placeholder="Опис вашого товару"></textarea>
+        </div>
+
+        <div class="col-12 border border-success border-dashed p-4 rounded text-center position-relative">
+            <input type="file"
+                   id="fileInput"
+                   class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                   style="cursor:pointer"
+                   accept="image/*"
+                   multiple />
+            <span class="text-muted">Натисніть і оберіть фото</span>
+        </div>
+
+        <div id="imageList" class="col-12 row row-cols-2 row-cols-md-4 g-3 mt-2"></div>
+
+        <button type="submit" class="btn btn-primary">
+            Додати товар
+        </button>
+    </form>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/slugify@1.6.9/slugify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <!-- Place the first <script> tag in your HTML's <head> -->
+    <script src="https://cdn.tiny.cloud/1/l4ipj5d2e673xkfnuw4xjsxgaqqu4f45uf8qoh4az9o28mzr/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
+    <!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+    <script>
+        tinymce.init({
+            selector: '#Description',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded',() => {
+
+            new Sortable(document.getElementById("imageList"),
+            {
+                animation: 150,
+                onEnd: renumberBadges
+            });
+
+            const fileInput = document.getElementById("fileInput");
+            const imageList = document.getElementById("imageList");
+
+            fileInput.addEventListener('change', (e)=>{
+                const files = e.target.files;
+                // console.log("select files", files);
+                Array.from(files).forEach(file => {
+                    if(!file.type.startsWith('image/'))
+                        return;
+                    const col = document.createElement('div');
+                    col.className = 'col';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'position-relative';
+                    wrapper.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded border" style="height:100px;">
+                        <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                    </div>`;
+
+                    col.appendChild(wrapper);
+                    imageList.appendChild(col);
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        wrapper.innerHTML = '';
+                        //console.log("Load file", e.target.result);
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-fluid rounded border w-100';
+                        img.style.height = '100px';
+                        img.style.objectFit = 'cover';
+                        img.alt = file.name;
+                        img.title = file.name;
+
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-dark position-absolute bottom-0 start-0 m-1 priority-badge';
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle';
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.setAttribute('aria-label', 'Видалити фото');
+                        removeBtn.addEventListener('click', () => {
+                            col.remove();
+                            renumberBadges();
+                        });
+
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(badge);
+                        wrapper.appendChild(removeBtn);
+
+                        renumberBadges();
+                    }
+
+                    reader.readAsDataURL(file);
+                });
+
+                fileInput.value=""; //очищаємо значення, щоб можна було брати нові фото
+            });
+
+            function renumberBadges() {
+                imageList.querySelectorAll('.priority-badge').forEach((badge, index) => {
+                    badge.textContent = index + 1;
+                });
+            }
+        });
+    </script>
+
+    <script>
+        //Перехоплюю відправляння форми на сервер
+        document.addEventListener('DOMContentLoaded',() => {
+            const createProductForm = document.getElementById("createProductForm");
+            createProductForm.addEventListener("submit", (e)=>{
+                // e.preventDefault(); - пауза була для тесту і преверки js
+                // console.log("Working in form data");
+                //Якщо на формі були скриті поля із фото. Ми їх видаляємо.
+                createProductForm.querySelectorAll('input[name^="Images"]').forEach(el => el.remove());
+
+                const imgs = imageList.querySelectorAll('img');
+                imgs.forEach((img,index) => {
+                    const hiddenName = document.createElement('input');
+                    hiddenName.type = 'hidden';
+                    hiddenName.name = `Images[${index}].Base64Image`;
+                    hiddenName.value = img.src; //код base64 самої фотки
+                    createProductForm.appendChild(hiddenName);
+
+                    const hiddenPriority = document.createElement('input');
+                    hiddenPriority.type = 'hidden';
+                    hiddenPriority.name = `Images[${index}].Priority`;
+                    hiddenPriority.value = index;
+                    createProductForm.appendChild(hiddenPriority);
+                });
+
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const Name = document.getElementById("Name");
+            const Slug = document.getElementById("Slug");
+            Name.addEventListener("input", () => {
+                Slug.value = slugify(Name.value, {
+                    lower: true,
+                    strict: true,
+                    trim: true
+                });
+            });
+        });
+    </script>
+}
