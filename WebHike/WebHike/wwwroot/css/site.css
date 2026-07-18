@@ -42,6 +42,187 @@ body{
     box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
 }
 
-    .card:hover .card-img-top {
-        transform: scale(1.05);
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.img-hover-wrap {
+    position: relative;
+    overflow: hidden;
+}
+
+    .img-hover-wrap .category-img {
+        width: 100%;
+        display: block;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .img-hover-wrap .img-hover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    }
+
+.category-card:hover .img-hover {
+    opacity: 1;
+}
+
+.category-card:hover .img-default {
+    opacity: 0;
+}
+
+
+/* Product page*/
+.product-page {
+    --pp-ink: #1c1b19;
+    --pp-ink-soft: #6b6862;
+    --pp-line: #e7e3dc;
+    --pp-surface: #faf9f6;
+    --pp-accent: #2f5d50;
+    --pp-accent-soft: #eaf1ee;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--pp-ink);
+}
+
+    .product-page .breadcrumb {
+        font-size: .85rem;
+    }
+
+        .product-page .breadcrumb a {
+            color: var(--pp-ink-soft);
+            text-decoration: none;
+        }
+
+            .product-page .breadcrumb a:hover {
+                color: var(--pp-accent);
+            }
+
+    .product-page .breadcrumb-item.active {
+        color: var(--pp-ink);
+    }
+
+/* --- Image stage: fixes wildly different aspect ratios --- */
+.pp-stage {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--pp-surface);
+    border: 1px solid var(--pp-line);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(28, 27, 25, .04);
+}
+
+    .pp-stage img#mainImage {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        padding: 1.25rem;
+        border-radius: 0;
+        transition: opacity .15s ease;
+    }
+
+    .pp-stage .btn {
+        background: #fff;
+        color: var(--pp-ink);
+        border: 1px solid var(--pp-line);
+        opacity: 1 !important;
+        box-shadow: 0 1px 3px rgba(28, 27, 25, .12);
+    }
+
+        .pp-stage .btn:hover {
+            background: var(--pp-accent-soft);
+            color: var(--pp-accent);
+        }
+
+    .pp-stage #imgCounter {
+        background: rgba(28, 27, 25, .78) !important;
+        font-weight: 500;
+        font-size: .72rem;
+        letter-spacing: .02em;
+    }
+
+.pp-thumbs {
+    max-width: 480px;
+    margin: 0.75rem auto 0;
+}
+
+    .pp-thumbs img.thumb-item {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        object-fit: cover;
+        background: var(--pp-surface);
+        border-radius: 10px;
+        border: 1px solid var(--pp-line) !important;
+        transition: opacity .15s ease, border-color .15s ease, transform .15s ease;
+    }
+
+        .pp-thumbs img.thumb-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .pp-thumbs img.thumb-item.border-primary {
+            border-color: var(--pp-accent) !important;
+        }
+
+/* --- Info column --- */
+.pp-category {
+    background: var(--pp-accent-soft) !important;
+    color: var(--pp-accent);
+    font-weight: 500;
+    font-size: .72rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .4em .8em;
+}
+
+.pp-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.7rem, 2.4vw, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+
+.pp-price {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    color: var(--pp-accent) !important;
+    font-size: 1.7rem;
+}
+
+.pp-description {
+    color: var(--pp-ink-soft);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.pp-actions .btn {
+    border-radius: 10px;
+    padding: .6rem 1.4rem;
+    font-weight: 500;
+    font-size: .9rem;
+}
+
+.pp-actions .btn-outline-dark {
+    border-color: var(--pp-ink);
+    color: var(--pp-ink);
+}
+
+    .pp-actions .btn-outline-dark:hover {
+        background: var(--pp-ink);
+        border-color: var(--pp-ink);
+    }
+
+.pp-actions .btn-outline-danger {
+    border-color: #c0473f;
+    color: #c0473f;
+}
+
+    .pp-actions .btn-outline-danger:hover {
+        background: #c0473f;
+        border-color: #c0473f;
     }

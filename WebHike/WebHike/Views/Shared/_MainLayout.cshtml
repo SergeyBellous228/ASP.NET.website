@@ -1,16 +1,22 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Наш магазин</title>
+    <title>Nike store</title>
     <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/css/site.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
 </head>
 <body>
-
     <header data-bs-theme="dark">
-        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <nav class="navbar navbar-expand-md navbar-dark bg-black fixed-top">
             <div class="container">
-                <a class="navbar-brand" asp-action="Index" asp-controller="Main">Магазин</a>
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Main" asp-action="Index">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         height="52" viewBox="0 0 50 50"
+                         style="fill:#FFFFFF;">
+                        <path fill-rule="evenodd" d="M 6.40625 16.800781 C 3.152344 20.621094 0 25.234375 0 28.902344 C 0 31.019531 1.78125 33.996094 6.132813 33.996094 C 8.484375 33.996094 10.820313 33.050781 12.648438 32.320313 C 15.730469 31.085938 49.789063 16.296875 49.789063 16.296875 C 50.117188 16.132813 50.058594 15.925781 49.644531 16.027344 C 49.480469 16.070313 12.566406 26.074219 12.566406 26.074219 C 11.855469 26.273438 11.128906 26.382813 10.421875 26.382813 C 7.230469 26.382813 5.078125 24.851563 5.078125 21.503906 C 5.078125 20.207031 5.484375 18.640625 6.40625 16.800781 Z"></path>
+                    </svg>
+                    <span class="fw-bold">NIKE</span>
+                </a>
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -24,32 +30,54 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav me-auto mb-2 mb-md-0">
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="page"
-                               asp-action="Index"
-                               asp-controller="Products">Товари</a>
+                            <a class="nav-link active" aria-current="page" asp-action="Index" asp-controller="Main">Категорії</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
+                            <a class="nav-link active" asp-action="Index" asp-controller="Products">Товари</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
                         </li>
                     </ul>
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    <form class="d-flex me-3">
+                        <input class="form-control rounded-pill"
+                               type="search"
+                               placeholder="Пошук...">
+                        <button class="btn btn-dark rounded-pill px-3 ms-1" type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 height="20" viewBox="0 0 50 50"
+                                 style="fill:#FFFFFF;">
+                                <path d="M 21 3 C 11.621094 3 4 10.621094 4 20 C 4 29.378906 11.621094 37 21 37 C 24.710938 37 28.140625 35.804688 30.9375 33.78125 L 44.09375 46.90625 L 46.90625 44.09375 L 33.90625 31.0625 C 36.460938 28.085938 38 24.222656 38 20 C 38 10.621094 30.378906 3 21 3 Z M 21 5 C 29.296875 5 36 11.703125 36 20 C 36 28.296875 29.296875 35 21 35 C 12.703125 35 6 28.296875 6 20 C 6 11.703125 12.703125 5 21 5 Z"></path>
+                            </svg>
+                        </button>
                     </form>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @using (Html.BeginForm("Logout", "Account", FormMethod.Post))
+                        {
+                            <button class="btn btn-dark rounded-pill px-4">
+                                @User.Identity.Name
+                                Вихід
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <a asp-action="Login" asp-controller="Account"
+                           class="btn btn-dark rounded-pill px-4">
+                            Увійти
+                        </a>
+                    }
                 </div>
             </div>
         </nav>
     </header>
 
     <main class="container">
-        @* Означає, що сюди буде вставлятися код із сторінки, який
-    використовує даний Layout *@
         @RenderBody()
     </main>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="/lib/bootstrap/dist/js/bootstrap.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

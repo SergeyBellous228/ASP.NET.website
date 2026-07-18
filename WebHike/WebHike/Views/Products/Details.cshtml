@@ -1,0 +1,180 @@
+﻿@model ProductDetailViewModel
+
+@{
+    ViewData["Title"] = Model?.Name;
+    var mainImage = Model?.Images.FirstOrDefault() ?? "no-image";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+
+@if (Model == null)
+{
+    <div class="product-page text-center my-5">
+        <h2>Товар не знайдено</h2>
+        <a asp-action="Index" class="btn btn-dark mt-3">Повернутися до списку</a>
+    </div>
+}
+else
+{
+    var modalId = $"confirmDelete-{Model.Id}";
+    <div class="container py-2 product-page">
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-action="Index">Список товарів</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    @Model.Name
+                </li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+
+            <div class="col-md-6">
+                <div class="pp-stage">
+                    <img id="mainImage"
+                         src="@($"/images/{mainImage}_432.webp")"
+                         alt="@Model.Name">
+
+                    @if (Model.Images.Count > 1)
+                    {
+                        <button class="btn btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                                id="prevBtn" style="width:36px;height:36px;padding:0;line-height:1;">
+                            &#8249;
+                        </button>
+                        <button class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                                id="nextBtn" style="width:36px;height:36px;padding:0;line-height:1;">
+                            &#8250;
+                        </button>
+                        <span id="imgCounter"
+                              class="position-absolute bottom-0 end-0 m-2 badge bg-dark">
+                            1 / @Model.Images.Count
+                        </span>
+                    }
+                </div>
+
+                @if (Model.Images.Count > 1)
+                {
+                    <div class="row mt-3 g-2 pp-thumbs">
+                        @for (int i = 0; i < Model.Images.Count; i++)
+                        {
+                            <div class="col-3">
+                                <img src="@($"/images/{Model.Images[i]}_432.webp")"
+                                     class="img-thumbnail thumb-item @(i == 0 ? "border-primary" : "")"
+                                     data-index="@i"
+                                     alt="@Model.Name"
+                                     style="cursor:pointer; opacity:@(i == 0 ? "1" : "0.6")">
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Інформація -->
+            <div class="col-md-6">
+
+                <span class="badge pp-category mb-3">
+                    @Model.CategoryName
+                </span>
+
+                <h1 class="pp-title mb-3">
+                    @Model.Name
+                </h1>
+
+                <h2 class="pp-price mb-4">
+                    @Model.Price
+                </h2>
+
+                <div class="mb-4">
+                    <p class="pp-description" style="white-space: pre-line;">
+                        @Html.Raw(@Model.Description)
+                    </p>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex mt-4 pp-actions">
+                    <a asp-action="ProdEdit" asp-route-id="@Model.Id" class="btn btn-outline-dark">
+                        Редагувати
+                    </a>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#@modalId"
+                        class="btn btn-danger ">
+                        Видалити
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="label_@Model.Id">Підтвердіть операцію</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Ви дійсно бажаєте видалити product
+                            <strong>"@Model.Name"</strong>?
+                        </p>
+
+                        <p class="text-danger mb-0">
+                            Після видалення відновити буде неможливо.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-danger">Видалити</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.Images ?? new List<string>()));
+            if (images.length <= 1) return;
+
+            let current = 0;
+            const mainImg = document.getElementById('mainImage');
+            const counter = document.getElementById('imgCounter');
+            const thumbs  = document.querySelectorAll('.thumb-item');
+
+            function goTo(i) {
+                current = (i + images.length) % images.length;
+                mainImg.src = `/images/${images[current]}_432.webp`;
+                counter.textContent = `${current + 1} / ${images.length}`;
+                thumbs.forEach((t, idx) => {
+                    t.style.opacity = idx === current ? '1' : '0.6';
+                    t.classList.toggle('border-primary', idx === current);
+                });
+            }
+
+            document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+            document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+            thumbs.forEach(t => t.addEventListener('click', () => goTo(+t.dataset.index)));
+
+            // свайп на мобільних
+            let startX = 0;
+            mainImg.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+            mainImg.addEventListener('touchend', e => {
+                const diff = startX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
+            });
+        })();
+    </script>
+}

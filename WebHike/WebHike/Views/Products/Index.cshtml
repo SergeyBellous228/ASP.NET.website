@@ -1,5 +1,43 @@
-﻿<h1>Products List</h1>
+﻿@* @model List<WebHike.Data.Entities.ProductEntity> *@
+@model List<ProductItemViewModel>
+
+<h1 class="text-center mb-5 fw-bold">Список товарів Nike</h1>
+
+<a asp-action="ProdCreate" class="btn btn-secondary mb-3">Додати новий товар</a>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
 
-<a asp-action="ProdCreate" class="btn btn-success">Додати Product</a>
+    @foreach (var prod in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm category-card border-0">
+                <div class="img-hover-wrap">
+                    <img src="/images/@($"{prod.Images.FirstOrDefault()}_432.webp")"
+                         class="card-img-top category-img img-default"
+                         alt="@prod.Name">
+
+                    @if (prod.Images.Count() > 1)
+                    {
+                        <img src="/images/@($"{prod.Images.Skip(1).FirstOrDefault()}_432.webp")"
+                             class="card-img-top category-img img-hover"
+                             alt="@prod.Name">
+                    }
+                </div>
+
+                <div class="card-body text-center">
+                    <h3 class="card-title fw-bold">@prod.Name</h3>
+                    <span class="badge bg-dark">@prod.CategoryName</span>
+                    <h3 class="price mt-3">@prod.Price</h3>
+
+                    <div class="card-footer bg-white border-0">
+                        <a asp-action="Details" asp-route-id="@prod.Id" class="btn btn-dark w-100 stretched-link">
+                            Переглянути
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 

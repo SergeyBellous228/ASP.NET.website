@@ -1,0 +1,43 @@
+﻿@model WebHike.Models.Account.LoginViewModel
+
+@{
+    ViewData["Title"] = "Вхід";
+}
+
+<h1 class="text-center mb-5 fw-bold">Вхід</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success col-md-6 offset-md-3">@TempData["Message"]</div>
+}
+
+<div class="row">
+    <form asp-controller="Account" asp-action="Login" method="post" class="col-md-6 offset-md-3">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="username">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="current-password">
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="mb-3 form-check">
+            <input asp-for="RememberMe" class="form-check-input">
+            <label asp-for="RememberMe" class="form-check-label"></label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Увійти</button>
+        <p class="text-center mt-3">
+            Немає акаунту? <a asp-controller="Account" asp-action="Register">Зареєструватися</a>
+        </p>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
