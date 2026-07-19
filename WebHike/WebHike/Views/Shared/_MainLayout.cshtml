@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using WebHike.Data.Entities.Identity
+@inject UserManager<UserEntity> UserManager
+
+<!DOCTYPE html>
 <html>
 <head>
     <title>Nike store</title>
@@ -55,10 +59,15 @@
                     {
                         @using (Html.BeginForm("Logout", "Account", FormMethod.Post))
                         {
-                            <button class="btn btn-dark rounded-pill px-4">
-                                @User.Identity.Name
-                                Вихід
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            var avatarImage = currentUser?.Image ?? "default.jpg";
+
+                            <button type="button" class="btn p-0 border-0 rounded-circle user-avatar-btn"
+                                    data-bs-toggle="modal" data-bs-target="#userModal">
+                                <img src="/images/@($"{avatarImage}_432.webp")" alt="@User.Identity.Name" width="42" height="42"
+                                     class="rounded-circle" style="object-fit:cover;">
                             </button>
+
                         }
                     }
                     else
@@ -75,6 +84,26 @@
 
     <main class="container">
         @RenderBody()
+
+        <!-- Modal -->
+        <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5"> @User.Identity.Name</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-footer">
+                        <form asp-action="Logout" asp-controller="Account" method="post" class="w-100">
+                            <button type="submit" class="btn btn-dark rounded-pill px-4 w-100">
+                                Вихід
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

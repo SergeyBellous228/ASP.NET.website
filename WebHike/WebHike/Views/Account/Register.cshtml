@@ -1,0 +1,148 @@
+﻿@model WebHike.Models.Account.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Реєстрація";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" />
+
+<h1 class="text-center mb-5 fw-bold">Реєстрація</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success col-md-6 offset-md-3">@TempData["Message"]</div>
+}
+
+<div class="row">
+    <form asp-controller="Account" asp-action="Register" method="post" enctype="multipart/form-data"
+          id="registerForm" class="col-md-6 offset-md-3">
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="username">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control">
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control">
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="new-password">
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="PasswordConfirm" class="form-label"></label>
+            <input asp-for="PasswordConfirm" class="form-control" autocomplete="new-password">
+            <span asp-validation-for="PasswordConfirm" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Image" class="form-label">Фото профілю</label>
+
+            <div id="imagePickerWrapper"
+                 class="border border-success border-dashed p-4 rounded text-center position-relative"
+                 style="cursor:pointer;">
+                <input type="file" asp-for="Image" id="ImageInput" accept="image/*"
+                       class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor:pointer;" />
+                <span class="text-muted" id="imagePickerText">Натисніть і виберіть фото</span>
+                <div id="croppedPreviewWrapper" class="d-none mt-3">
+                    <img alt="Сало" id="croppedPreview" class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;" />
+                </div>
+            </div>
+            <span asp-validation-for="Image" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Зареєструватися</button>
+        <p class="text-center mt-3">
+            Вже є акаунт? <a asp-controller="Account" asp-action="Login">Увійти</a>
+        </p>
+    </form>
+</div>
+
+<!-- Модальне вікно обрізки зображення -->
+<div class="modal" id="cropModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Обрізати фото</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 400px;">
+                    <img alt="cropperImage" id="cropperImage" style="max-width: 100%;" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="cropConfirmBtn">Обрізати та зберегти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const imageInput = document.getElementById("ImageInput");
+                    const cropperImage = document.getElementById("cropperImage");
+                    const cropModalEl = document.getElementById("cropModal");
+                    const cropModal = new bootstrap.Modal(cropModalEl);
+                    const cropConfirmBtn = document.getElementById("cropConfirmBtn");
+                    const croppedPreview = document.getElementById("croppedPreview");
+                    const croppedPreviewWrapper = document.getElementById("croppedPreviewWrapper");
+                    const imagePickerText = document.getElementById("imagePickerText");
+
+                    let cropper = null;
+
+                    imageInput.addEventListener("change", (e) => {
+                        const file = e.target.files[0];
+                        if (!file || !file.type.startsWith("image/")) return;
+                        cropperImage.src = URL.createObjectURL(file);
+                        cropModal.show();
+                    });
+                    //Коли модальне вікно на bootstrap появилося, тобто користувач його побачив
+                    cropModalEl.addEventListener("shown.bs.modal", () => {
+                        if (cropper)  //перевіряємо чи існує cropper - якщо є то деактивуємо кропер
+                            cropper.destroy();
+                        cropper = new Cropper(cropperImage, {
+                            aspectRatio: 1, //співідно сторін, якщо  1 - це квадрат
+                            viewMode: 1, // не виходити за межі області
+                            autoCropArea: 1, //Щоб роширялося на всю шинину
+                            background: true // не відображати background
+                        });
+                    });
+
+                    cropConfirmBtn.addEventListener("click", () => {
+                        if (!cropper) return;
+                        //Отримуємо розмір фото із cropper
+                        //не дуже потрібно, що обрізали те і получимо
+                        const canvas = cropper.getCroppedCanvas({
+        //                    width: 400,
+        //                    height: 400
+                        });
+                        //toBlob - він буде виклкати проміс - асинхрону функцію після виконаня
+                        //ми можемо отримати blob - це двійкових форма для файлу
+                        canvas.toBlob((blob) => {
+                            const dt = new DataTransfer();
+                            dt.items.add(new File([blob], "avatar.png", { type: "image/png" }));
+                            imageInput.files = dt.files;
+                            //Тут ми отримуємо base64 для зображення у форматі png
+                            croppedPreview.src = canvas.toDataURL("image/png");
+                            croppedPreviewWrapper.classList.remove("d-none"); //відображаю фото
+                            imagePickerText.classList.add("d-none"); //ховаю текст
+
+                            cropModal.hide(); //Ховаємо модалку
+                        }, "image/png");
+                    });
+                });
+    </script>
+}
