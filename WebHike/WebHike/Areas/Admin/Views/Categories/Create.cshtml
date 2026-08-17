@@ -1,0 +1,46 @@
+﻿@model WebHike.Areas.Admin.Models.Category.CategoryCreateVM
+
+<h1 class="text-center">Create Cathegory</h1>
+
+<form asp-action="Create" enctype="multipart/form-data" method="post" class="col-md-6 offset-md-3">
+	
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+		<span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Slug" class="form-label"></label>
+        <input asp-for="Slug" class="form-control">
+        <span asp-validation-for="Slug" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Image" class="form-label"></label>
+        <input asp-for="Image" class="form-control">
+		<span asp-validation-for="Image" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Додати категорію
+    </button>
+</form>
+
+@section PageScripts {
+    <script src="https://cdn.jsdelivr.net/npm/slugify@1.6.9/slugify.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const Name = document.getElementById("Name");
+            const Slug = document.getElementById("Slug");
+
+            Name.addEventListener("input", () => {
+                Slug.value = slugify(Name.value, {
+                    lower: true,
+                    strict: true,
+                    trim: true
+                });
+            });
+        });
+    </script>
+}

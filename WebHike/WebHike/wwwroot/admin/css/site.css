@@ -1,0 +1,26 @@
+/* Custom styles goes here */
+.img-hover-wrap {
+    position: relative;
+    overflow: hidden;
+}
+
+    .img-hover-wrap .category-img {
+        width: 100%;
+        display: block;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .img-hover-wrap .img-hover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    }
+
+.category-card:hover .img-hover {
+    opacity: 1;
+}
+
+.category-card:hover .img-default {
+    opacity: 0;
+}

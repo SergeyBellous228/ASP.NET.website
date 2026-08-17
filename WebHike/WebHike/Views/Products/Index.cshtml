@@ -1,5 +1,8 @@
-﻿@* @model List<WebHike.Data.Entities.ProductEntity> *@
-@model List<ProductItemViewModel>
+﻿@model List<ProductItemViewModel>
+@inject IConfiguration configuration
+@{
+    string path = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+}
 
 <h1 class="text-center mb-5 fw-bold">Список товарів Nike</h1>
 
@@ -13,13 +16,13 @@
         <div class="col">
             <div class="card h-100 shadow-sm category-card border-0">
                 <div class="img-hover-wrap">
-                    <img src="/images/@($"{prod.Images.FirstOrDefault()}_432.webp")"
+                    <img src="@($"/{path}/{prod.Images.FirstOrDefault()}_432.webp")"
                          class="card-img-top category-img img-default"
                          alt="@prod.Name">
 
                     @if (prod.Images.Count() > 1)
                     {
-                        <img src="/images/@($"{prod.Images.Skip(1).FirstOrDefault()}_432.webp")"
+                        <img src="@($"/{path}/{prod.Images.Skip(1).FirstOrDefault()}_432.webp")"
                              class="card-img-top category-img img-hover"
                              alt="@prod.Name">
                     }
@@ -40,4 +43,5 @@
         </div>
     }
 </div>
+
 

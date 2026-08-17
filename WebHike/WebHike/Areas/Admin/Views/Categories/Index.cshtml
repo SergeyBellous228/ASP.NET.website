@@ -1,0 +1,60 @@
+﻿@model List<CategoryItemVM>
+@inject IConfiguration configuration
+@{
+    string path = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+}
+
+
+<a asp-action="Create" class="btn btn-success">Додати категорію</a>
+
+<div class="main-container">
+    @foreach(var category in Model)
+    {
+		var modalId = $"confirmDelete-{category.Id}";
+        <div class="card" style="width: 18rem;">
+            <img src="@($"/{path}/{category.Image}_432.webp")" class="card-img-top" alt="@category.Name">
+            <div class="card-body">
+				<h5 class="card-title">@category.Name</h5>
+                <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-primary mb-2">View</a>
+
+               
+                <button type="button"
+                        data-bs-toggle="modal" data-bs-target="#@modalId"
+                        class="btn btn-danger w-100">
+                    Видалити
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="label_@category.Id">Підтвердіть операцію</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Ви дійсно бажаєте видалити категорію
+                            <strong>"@category.Name"</strong>?
+                        </p>
+
+                        <p class="text-danger mb-0">
+                            Після видалення відновити її буде неможливо.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <form asp-action="Delete" asp-route-id="@category.Id" method="post">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-danger">Видалити</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+	}
+
+   
+</div>

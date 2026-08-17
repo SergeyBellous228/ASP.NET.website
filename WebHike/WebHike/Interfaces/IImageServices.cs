@@ -10,7 +10,7 @@ public interface IImageService
     /// <param name="file">Файл, переданий користувачем (IFormFile)</param>
     /// <param name="folderPath">Абсолютний шлях до папки, куди зберігати (напр. wwwroot/images)</param>
     /// <returns>Ім'я збереженого файлу (без шляху)</returns>
-    Task<string> SaveOptimizedImageAsync(IFormFile file, string folderPath);
+    Task<string> SaveOptimizedImageAsync(IFormFile file);
     /// <summary>
     /// Те саме, що SaveOptimizedImageAsync(IFormFile, string), але приймає
     /// зображення у вигляді base64-рядка (як звичайного, так і у форматі
@@ -19,6 +19,6 @@ public interface IImageService
     /// <param name="base64Image">Base64-рядок із вмістом зображення</param>
     /// <param name="folderPath">Абсолютний шлях до папки, куди зберігати</param>
     /// <returns>Ім'я збереженого файлу (без шляху)</returns>
-    Task<string> SaveOptimizedImageAsync(string base64Image, string folderPath);
-    Task RemoveImageAsync(string imageName, string folderPath);
+    Task<string> SaveOptimizedImageAsync(string base64Image);
+    Task RemoveImageAsync(string imageName);
 }

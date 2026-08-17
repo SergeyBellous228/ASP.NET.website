@@ -68,8 +68,8 @@ public class AccountController(UserManager<UserEntity> userManager, IImageServic
 
         if (model.Image != null)
         {
-            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-            var fileName = await imageService.SaveOptimizedImageAsync(model.Image, folderPath);
+            //string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            var fileName = await imageService.SaveOptimizedImageAsync(model.Image);
             user.Image = fileName;
         }
 

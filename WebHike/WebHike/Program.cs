@@ -1,10 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using WebHike.Constants;
 using WebHike.Data;
+using WebHike.Data.Entities.Identity;
 using WebHike.Interfaces;
 using WebHike.Services;
-using WebHike.Data.Entities.Identity;
-using WebHike.Constants;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,10 +46,28 @@ var app = builder.Build();
 
 app.UseSession();
 
-var dirName = "images";
-var dirCurrent = Directory.GetCurrentDirectory();
-var path = Path.Combine(dirCurrent, "wwwroot", dirName);
-Directory.CreateDirectory(path);
+//var dirName = "images";
+//var dirCurrent = Directory.GetCurrentDirectory();
+//var path = Path.Combine(dirCurrent, "wwwroot", dirName);
+//Directory.CreateDirectory(path); //автоматично стоврить images
+
+try
+{
+    var myImage = builder.Configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+    string path = Path.Combine(Directory.GetCurrentDirectory(), myImage);
+    Directory.CreateDirectory(path); //автоматично стоврить images
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(path),
+        RequestPath = $"/{myImage}"
+    });
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Помилка запуску" + ex.Message);
+}
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -60,19 +79,37 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Main}/{action=Index}/{id?}")
-    .WithStaticAssets();
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Main}/{action=Index}/{id?}")
+//    .WithStaticAssets();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapAreaControllerRoute(
+      name: "admin_area",
+      areaName: "Admin",
+      pattern: "admin/{controller=Dashboards}/{action=Index}/{id?}"
+    );
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Main}/{action=Index}/{id?}"
+    );
+});
 
 // Перед запуском додам в БД ролі користувачів, якщо їх там немає
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var roleManager = services.GetRequiredService<RoleManager<RoleEntity>>();
-    var userManager = services.GetRequiredService<UserManager<UserEntity>>(); 
+    var userManager = services.GetRequiredService<UserManager<UserEntity>>();
+    var dbContext = services.GetRequiredService<HikeDbContext>();
 
-                if (!roleManager.Roles.Any())
+    //Коли запускається проект він перевіряє БД, якщо БД пуста то він автоматично робить БД
+    //на основі міграцій, які є у проекті
+    await dbContext.Database.MigrateAsync();
+
+    if (!roleManager.Roles.Any())
     {
         foreach (var roleName in Roles.ListRoles())
         {
@@ -84,6 +121,7 @@ using (var scope = app.Services.CreateScope())
     {
         var user = new UserEntity
         {
+
             Email = "admin@gmail.com",
             UserName = "admin@gmail.com",
             FirstName = "Павло",
@@ -97,3 +135,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+

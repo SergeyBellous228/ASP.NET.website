@@ -1,29 +1,53 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using WebHike.Data;
 using WebHike.Data.Entities;
 using WebHike.Interfaces;
 using WebHike.Models.Category;
- 
 
 namespace WebHike.Controllers;
 
-public class MainController(HikeDbContext hikeDbContext, IImageService imageService) : Controller
+public class MainController(HikeDbContext hikeDbContext,
+    IConfiguration configuration,
+    IImageService imageService)
+    : Controller
 {
+    //private readonly HikeDbContext _hikeDbContext;
+    //public MainController(HikeDbContext hikeDbContext)
+    //{
+    //    _hikeDbContext = hikeDbContext;
+    //}
+    //Методи у ASP.NET - звуться Action - дія
     public IActionResult Index()
     {
-        var list = hikeDbContext.Categories.ToList();
-        return View(list);
+        ///Контролер дані передає на певну View
+        ///View - це звичайна html сторінка із
+        ///кодом C# - Razor View
+        ///return "Привіт козаки :)";
+        ///так краще не робити :(
+
+        string path = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+        var sizes = configuration.GetRequiredSection("ImageSizes").Get<List<int>>() ??
+            throw new InvalidOperationException("ImageSizes not found");
+        var list = hikeDbContext.Categories
+            .Select(x => new CategoryItemVM
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Image = $"/{path}/{x.Image}_{sizes[1]}.webp"
+            })
+
+            .ToList();
+        return View(list); //Передаю дані на View - список категорій
     }
-
-    [HttpGet]
-
+    //Метод для створення категорії нової
+    [HttpGet] //Для відображення фоми
     public IActionResult Create()
     {
         return View();
     }
-
-    [HttpPost]
-    public async Task< IActionResult> Create(CategoryCreateViewModel model)
+    [HttpPost] //Цей метод спрацьовує коли кидає Post Request
+    public async Task<IActionResult> Create(CategoryCreateViewModel model)
     {
         if (ModelState.IsValid)
         {
@@ -31,41 +55,42 @@ public class MainController(HikeDbContext hikeDbContext, IImageService imageServ
             categoryEntity.Name = model.Name;
             categoryEntity.Slug = model.Slug;
             categoryEntity.Image = "default.jpg";
-
-            if (model.Image != null)
+            try
             {
-                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                if (model.Image != null)
+                {
+                    var fileName = await imageService.SaveOptimizedImageAsync(model.Image);
+                    categoryEntity.Image = fileName; //в БД зберігаю назву файла
+                }
 
-                // Фото стискається на сервері (ImageSharp): зменшується до
-                // розумного розміру та перекодовується у JPEG з компресією,
-                // тож 2 МБ з телефону не стають 2 МБ на сайті.
-                var fileName = await imageService.SaveOptimizedImageAsync(model.Image, folderPath);
-
-                categoryEntity.Image = fileName; // В БД зберігаю назву файла
-
+                hikeDbContext.Categories.Add(categoryEntity);
+                hikeDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(String.Empty, "Сталася халупа " + ex.Message);
+                return View(model); // Що прийшло те іде назад
             }
 
-            hikeDbContext.Categories.Add(categoryEntity);
-            hikeDbContext.SaveChanges();
-
-            return Redirect(nameof(Index)); // Повертаюся на список категорій
+            return Redirect(nameof(Index)); //Повертаюся на список категорій
         }
-        return View(model);
+
+        return View(model); // Що прийшло те іде назад
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var cat = hikeDbContext.Categories.SingleOrDefault(x => x.Id == id);
-        if (cat == null)
-            return NotFound();
+    //[HttpPost]
+    //public async Task<IActionResult> Delete(int id) 
+    //{
+    //    var cat = hikeDbContext.Categories.SingleOrDefault(x => x.Id == id);
+    //    if(cat == null)
+    //        return NotFound();
 
-        string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-        await imageService.RemoveImageAsync(cat.Image, folderPath);
+    //    string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+    //    await imageService.RemoveImageAsync(cat.Image, folderPath);
 
-        hikeDbContext.Categories.Remove(cat);
-        await hikeDbContext.SaveChangesAsync();
+    //    hikeDbContext.Categories.Remove(cat);
+    //    await hikeDbContext.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
-    }
+    //    return RedirectToAction(nameof(Index));
+    //}
 }

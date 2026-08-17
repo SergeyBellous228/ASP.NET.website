@@ -1,18 +1,14 @@
 ﻿@model ProductDetailViewModel
-
+@inject IConfiguration configuration
 @{
     ViewData["Title"] = Model?.Name;
     var mainImage = Model?.Images.FirstOrDefault() ?? "no-image";
+    string path = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
 }
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
 
 @if (Model == null)
 {
-    <div class="product-page text-center my-5">
+    <div class="text-center my-5">
         <h2>Товар не знайдено</h2>
         <a asp-action="Index" class="btn btn-dark mt-3">Повернутися до списку</a>
     </div>
@@ -20,7 +16,7 @@
 else
 {
     var modalId = $"confirmDelete-{Model.Id}";
-    <div class="container py-2 product-page">
+    <div class="container py-2">
 
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
@@ -35,24 +31,26 @@ else
 
         <div class="row g-5">
 
+            <!-- Фото товару -->
             <div class="col-md-6">
-                <div class="pp-stage">
+                <div class="card shadow border-0 position-relative">
                     <img id="mainImage"
-                         src="@($"/images/{mainImage}_432.webp")"
+                         src="@($"/{path}/{mainImage}_432.webp")"
+                         class="img-fluid rounded"
                          alt="@Model.Name">
 
                     @if (Model.Images.Count > 1)
                     {
-                        <button class="btn btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                        <button class="btn btn-dark btn-sm opacity-75 position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
                                 id="prevBtn" style="width:36px;height:36px;padding:0;line-height:1;">
                             &#8249;
                         </button>
-                        <button class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                        <button class="btn btn-dark btn-sm opacity-75 position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
                                 id="nextBtn" style="width:36px;height:36px;padding:0;line-height:1;">
                             &#8250;
                         </button>
                         <span id="imgCounter"
-                              class="position-absolute bottom-0 end-0 m-2 badge bg-dark">
+                              class="position-absolute bottom-0 end-0 m-2 badge bg-dark opacity-75">
                             1 / @Model.Images.Count
                         </span>
                     }
@@ -60,11 +58,11 @@ else
 
                 @if (Model.Images.Count > 1)
                 {
-                    <div class="row mt-3 g-2 pp-thumbs">
+                    <div class="row mt-3 g-2">
                         @for (int i = 0; i < Model.Images.Count; i++)
                         {
                             <div class="col-3">
-                                <img src="@($"/images/{Model.Images[i]}_432.webp")"
+                                <img src="@($"/{path}/{Model.Images[i]}_432.webp")"
                                      class="img-thumbnail thumb-item @(i == 0 ? "border-primary" : "")"
                                      data-index="@i"
                                      alt="@Model.Name"
@@ -78,21 +76,21 @@ else
             <!-- Інформація -->
             <div class="col-md-6">
 
-                <span class="badge pp-category mb-3">
+                <span class="badge bg-secondary mb-3">
                     @Model.CategoryName
                 </span>
 
-                <h1 class="pp-title mb-3">
+                <h1 class="fw-bold mb-3">
                     @Model.Name
                 </h1>
 
-                <h2 class="pp-price mb-4">
+                <h2 class="text-primary fw-bold mb-4">
                     @Model.Price
                 </h2>
 
                 <div class="mb-4">
-                    <p class="pp-description" style="white-space: pre-line;">
-                        @Html.Raw(@Model.Description)
+                    <p class="lead" style="white-space: pre-line;">
+                        @Html.Raw(Model.Description)
                     </p>
                 </div>
 
@@ -126,22 +124,23 @@ else
                     </div>
                 </form>
 
-                <div class="d-grid gap-2 d-md-flex mt-4 pp-actions">
+
+                @* <div class="d-grid gap-2 d-md-flex mt-4 pp-actions">
                     <a asp-action="ProdEdit" asp-route-id="@Model.Id" class="btn btn-outline-dark">
                         Редагувати
                     </a>
                     <button type="button" data-bs-toggle="modal" data-bs-target="#@modalId"
-                        class="btn btn-danger ">
+                            class="btn btn-danger ">
                         Видалити
                     </button>
-                </div>
+                </div> *@
 
             </div>
 
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+        @* <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -167,10 +166,8 @@ else
                     </div>
                 </div>
             </div>
-        </div>
+        </div> *@
     </div>
-
-
 }
 
 @section Scripts {
@@ -186,7 +183,7 @@ else
 
             function goTo(i) {
                 current = (i + images.length) % images.length;
-                mainImg.src = `/images/${images[current]}_432.webp`;
+                mainImg.src = `/@($"{path}")/${images[current]}_432.webp`;
                 counter.textContent = `${current + 1} / ${images.length}`;
                 thumbs.forEach((t, idx) => {
                     t.style.opacity = idx === current ? '1' : '0.6';

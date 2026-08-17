@@ -56,12 +56,11 @@ public class ProductsController(HikeDbContext hikeDbContext,
                 Price = price,
                 Slug = model.Slug
             };
-            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
 
             var savedImages = await Task.WhenAll(
                 model.Images.Select(async image => new ProductImageEntity
                 {
-                    Name = await imageService.SaveOptimizedImageAsync(image.Base64Image, folderPath),
+                    Name = await imageService.SaveOptimizedImageAsync(image.Base64Image),
                     Order = image.Order
                 })
             );
@@ -104,10 +103,10 @@ public class ProductsController(HikeDbContext hikeDbContext,
         if (product == null)
             return NotFound();
 
-        string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+        //string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
         foreach(var image in product.ProductImages)
         {
-            await imageService.RemoveImageAsync(image.Name, folderPath);
+            await imageService.RemoveImageAsync(image.Name);
         }
 
         hikeDbContext.Products.Remove(product);

@@ -1,29 +1,26 @@
-﻿@model List<WebHike.Data.Entities.CategoryEntity>
-
-
-<a asp-action="Create" class="btn btn-success">Додати категорію</a>
+﻿@model List<CategoryItemVM>
 
 <div class="main-container">
     @foreach(var category in Model)
     {
 		var modalId = $"confirmDelete-{category.Id}";
         <div class="card" style="width: 18rem;">
-            <img src="/images/@($"{category.Image}_432.webp")" class="card-img-top" alt="@category.Name">
+            <img src="@category.Image" class="card-img-top" alt="@category.Name">
             <div class="card-body">
 				<h5 class="card-title">@category.Name</h5>
                 <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-primary mb-2">View</a>
 
                
-                <button type="button"
+                @* <button type="button"
                         data-bs-toggle="modal" data-bs-target="#@modalId"
                         class="btn btn-danger w-100">
                     Видалити
-                </button>
+                </button> *@
             </div>
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+        @* <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -49,7 +46,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> *@
 	}
 
    

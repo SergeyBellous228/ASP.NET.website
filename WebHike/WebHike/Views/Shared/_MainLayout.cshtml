@@ -1,13 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using WebHike.Data.Entities.Identity
 @inject UserManager<UserEntity> UserManager
+@using WebHike.Constants
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Nike store</title>
     <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="/css/site.css" rel="stylesheet" />
 </head>
 <body>
     <header data-bs-theme="dark">
@@ -42,6 +43,13 @@
                         <li class="nav-item">
                             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
                         </li>
+                        @if (User.IsInRole(Roles.Admin))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Admin"
+                                   asp-controller="Home" asp-action="Index">Адмін панель</a>
+                            </li>
+                        }
                     </ul>
                     <form class="d-flex me-3">
                         <input class="form-control rounded-pill"

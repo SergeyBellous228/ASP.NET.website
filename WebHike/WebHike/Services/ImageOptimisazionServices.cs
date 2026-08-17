@@ -15,7 +15,7 @@ public class ImageOptimizationService(IConfiguration configuration,
 {
     private const int quality = 80;
 
-    public async Task<string> SaveOptimizedImageAsync(IFormFile file, string folderPath)
+    public async Task<string> SaveOptimizedImageAsync(IFormFile file)
     {
         if (file is null || file.Length == 0)
             throw new ArgumentException("Файл зображення порожній", nameof(file));
@@ -31,10 +31,10 @@ public class ImageOptimizationService(IConfiguration configuration,
 
         var originalSizeKb = file.Length / 1024;
 
-        return await SaveOptimizedImageAsync(imageBytes, folderPath, originalSizeKb);
+        return await SaveOptimizedImageAsync(imageBytes, originalSizeKb);
     }
 
-    public async Task<string> SaveOptimizedImageAsync(string base64Image, string folderPath)
+    public async Task<string> SaveOptimizedImageAsync(string base64Image)
     {
         if (string.IsNullOrWhiteSpace(base64Image))
             throw new ArgumentException("Base64-рядок зображення порожній", nameof(base64Image));
@@ -57,15 +57,17 @@ public class ImageOptimizationService(IConfiguration configuration,
 
         var originalSizeKb = imageBytes.Length / 1024;
 
-        return await SaveOptimizedImageAsync(imageBytes, folderPath, originalSizeKb);
+        return await SaveOptimizedImageAsync(imageBytes, originalSizeKb);
     }
 
     /// <summary>
     /// Спільна внутрішня логіка збереження: приймає вже готовий байт-масив
     /// зображення (незалежно від того, звідки він прийшов — IFormFile чи base64).
     /// </summary>
-    private async Task<string> SaveOptimizedImageAsync(byte[] imageBytes, string folderPath, long originalSizeKb)
+    private async Task<string> SaveOptimizedImageAsync(byte[] imageBytes, long originalSizeKb)
     {
+        var folder = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+        string folderPath = Path.Combine(Directory.GetCurrentDirectory(), folder);
         Directory.CreateDirectory(folderPath);
 
         var sizes = configuration
@@ -134,8 +136,10 @@ public class ImageOptimizationService(IConfiguration configuration,
         return resized ?? throw new InvalidOperationException("Не вдалося змінити розмір зображення");
     }
 
-    public Task RemoveImageAsync(string imageName, string folderPath)
+    public Task RemoveImageAsync(string imageName)
     {
+        var folder = configuration.GetRequiredSection("ImagesDir").Get<string>() ?? "myimages";
+        string folderPath = Path.Combine(Directory.GetCurrentDirectory(), folder);
         if (string.IsNullOrWhiteSpace(imageName))
             throw new ArgumentException("Ім'я зображення не може бути порожнім", nameof(imageName));
 
